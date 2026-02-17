@@ -12,8 +12,13 @@ const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
+    connectTimeout: 20000, // Extend timeout to 20 seconds
     ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined
 });
+
+// Debug log (Safe)
+console.log(`Attempting to connect to database at: ${process.env.DB_HOST ? process.env.DB_HOST.substring(0, 10) + '...' : 'UNDEFINED'} on port: ${process.env.DB_PORT || 3306}`);
+
 
 const promisePool = pool.promise();
 
