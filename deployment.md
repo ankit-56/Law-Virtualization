@@ -16,18 +16,27 @@ This guide explains how to deploy the Law Virtualization platform to production.
 4.  Run your local `setupDb.js` and `seed.js` scripts but point them to the remote DB by temporarily updating your `.env`.
 
 ## 3. Backend Deployment (Render)
-1.  Connect your GitHub repo to **Render**.
-2.  Select **Web Service**.
-3.  **Root Directory**: `server`
-4.  **Build Command**: `npm install`
-5.  **Start Command**: `node server.js`
-6.  **Environment Variables**:
-    - `PORT`: 5000 (standard for our app)
-    - `DB_HOST`: [Your Aiven Host]
-    - `DB_USER`: [Your Aiven User]
-    - `DB_PASS`: [Your Aiven Password]
-    - `DB_NAME`: [Your Aiven DB Name]
-    - `JWT_SECRET`: [A long random string]
+1.  **Option A: Manual Setup**
+    1.  Connect your GitHub repo to **Render**.
+    2.  Select **Web Service**.
+    3.  **Root Directory**: `server`
+    4.  **Build Command**: `npm install`
+    5.  **Start Command**: `node server.js`
+    6.  **Environment Variables**:
+        - `PORT`: 5000 (standard for our app)
+        - `DB_HOST`: [Your Aiven Host]
+        - `DB_USER`: [Your Aiven User]
+        - `DB_PASS`: [Your Aiven Password]
+        - `DB_NAME`: [Your Aiven DB Name]
+        - `DB_SSL`: `true` (if your DB provider requires SSL)
+        - `JWT_SECRET`: [A long random string]
+        - `CLIENT_URL`: [Your Netlify/Frontend URL] (for CORS)
+
+2.  **Option B: Blueprints (Infrastructure as Code)**
+    1.  In Render, select **Blueprints**.
+    2.  Connect your repo.
+    3.  Render will detect `render.yaml` and auto-configure the service.
+    4.  You will need to approve and fill in the Environment Variables in the dashboard.
 
 ## 4. Frontend Deployment (Netlify)
 1.  Connect your GitHub repo to **Netlify**.
