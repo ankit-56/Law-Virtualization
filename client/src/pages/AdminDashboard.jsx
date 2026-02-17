@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { getLaws, createLaw, deleteLaw, updateLaw } from '../services/api';
-import { Trash2, Plus, Edit2, X, Save, FileText, Layers, Users } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { getLaws, createLaw, deleteLaw, updateLaw, bulkCreateLaws } from '../services/api';
+import { Trash2, Plus, Edit2, X, Save, FileText, Layers, Users, Upload, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [laws, setLaws] = useState([]);
@@ -8,10 +8,15 @@ const AdminDashboard = () => {
     const [showForm, setShowForm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentLawId, setCurrentLawId] = useState(null);
+    const fileInputRef = useRef(null);
+
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         content: '',
+        explanation: '',
+        pdf_url: '',
+        media_urls: [],
         category_id: 1
     });
 
@@ -38,6 +43,9 @@ const AdminDashboard = () => {
             title: law.title,
             description: law.description,
             content: law.content,
+            explanation: law.explanation || '',
+            pdf_url: law.pdf_url || '',
+            media_urls: typeof law.media_urls === 'string' ? JSON.parse(law.media_urls) : (law.media_urls || []),
             category_id: law.category_id || 1
         });
         setShowForm(true);
@@ -70,11 +78,41 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleBulkUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const csvOrJson = event.target.result;
+                const lawsArray = JSON.parse(csvOrJson);
+                if (Array.isArray(lawsArray)) {
+                    await bulkCreateLaws(lawsArray);
+                    alert(`${lawsArray.length} laws uploaded successfully!`);
+                    loadLaws();
+                } else {
+                    alert("Invalid JSON format. Expected an array of laws.");
+                }
+            } catch (err) {
+                alert("Error parsing file inside Admin Dashboard. Please ensure it is valid JSON.");
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const handleCloseForm = () => {
         setShowForm(false);
         setIsEditing(false);
         setCurrentLawId(null);
-        setFormData({ title: '', description: '', content: '', category_id: 1 });
+        setFormData({ title: '', description: '', content: '', explanation: '', pdf_url: '', media_urls: [], category_id: 1 });
+    };
+
+    const addMediaUrl = () => {
+        const url = prompt("Enter Image/Diagram URL:");
+        if (url) {
+            setFormData({ ...formData, media_urls: [...formData.media_urls, url] });
+        }
     };
 
     return (
@@ -82,14 +120,27 @@ const AdminDashboard = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
                     <h1 style={{ marginBottom: '0.25rem' }}>Admin Dashboard</h1>
-                    <p style={{ color: 'var(--secondary)' }}>Manage your legal digital repository</p>
+                    <p style={{ color: 'var(--secondary)' }}>Manage your legal digital repository (Rich Content Enabled)</p>
                 </div>
-                {!showForm && (
-                    <button className="btn btn-primary" onClick={() => setShowForm(true)} style={{ gap: '0.5rem' }}>
-                        <Plus size={18} />
-                        Add New Law
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        accept=".json"
+                        onChange={handleBulkUpload}
+                    />
+                    <button className="btn btn-outline" onClick={() => fileInputRef.current.click()} style={{ gap: '0.5rem' }}>
+                        <Upload size={18} />
+                        Bulk Upload (JSON)
                     </button>
-                )}
+                    {!showForm && (
+                        <button className="btn btn-primary" onClick={() => setShowForm(true)} style={{ gap: '0.5rem' }}>
+                            <Plus size={18} />
+                            Add New Law
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Quick Stats */}
@@ -147,6 +198,50 @@ const AdminDashboard = () => {
                                 </select>
                             </div>
                         </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>PDF Link (Optional)</label>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <LinkIcon size={18} style={{ alignSelf: 'center', color: 'var(--secondary)' }} />
+                                    <input
+                                        type="url"
+                                        placeholder="https://example.com/law.pdf"
+                                        value={formData.pdf_url}
+                                        onChange={e => setFormData({ ...formData, pdf_url: e.target.value })}
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--foreground)' }}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Diagrams / Images</label>
+                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                    {formData.media_urls.map((url, i) => (
+                                        <div key={i} style={{ position: 'relative', width: '40px', height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                                            <img src={url} alt="Diagram" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, media_urls: formData.media_urls.filter((_, idx) => idx !== i) })}
+                                                style={{ position: 'absolute', top: 0, right: 0, padding: 0, background: 'red', color: 'white', border: 'none', cursor: 'pointer', fontSize: '10px' }}>
+                                                X
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button type="button" onClick={addMediaUrl} className="btn btn-outline" style={{ padding: '0.5rem' }}><ImageIcon size={18} /></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Easy Explanation (diagram descriptions)</label>
+                            <textarea
+                                placeholder="Explain this law in very simple terms for everyone to understand..."
+                                value={formData.explanation}
+                                onChange={e => setFormData({ ...formData, explanation: e.target.value })}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', minHeight: '100px', background: 'var(--background)', color: 'var(--foreground)' }}
+                            />
+                        </div>
+
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Brief Summary</label>
                             <textarea
@@ -184,7 +279,7 @@ const AdminDashboard = () => {
                         <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left', backgroundColor: '#f1f5f9' }}>
                             <th style={{ padding: '1.25rem' }}>Statute Title</th>
                             <th style={{ padding: '1.25rem' }}>Domain</th>
-                            <th style={{ padding: '1.25rem' }}>Last Modified</th>
+                            <th style={{ padding: '1.25rem' }}>Features</th>
                             <th style={{ padding: '1.25rem', textAlign: 'right' }}>Management Actions</th>
                         </tr>
                     </thead>
@@ -202,8 +297,12 @@ const AdminDashboard = () => {
                                             {law.category_name || 'General'}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '1.25rem', fontSize: '0.875rem', color: 'var(--secondary)' }}>
-                                        {new Date(law.created_at).toLocaleDateString()}
+                                    <td style={{ padding: '1.25rem' }}>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            {law.pdf_url && <FileText size={16} title="PDF Attached" style={{ color: '#1a365d' }} />}
+                                            {law.explanation && <Layers size={16} title="Easy Explanation" style={{ color: '#c5a059' }} />}
+                                            {law.media_urls && JSON.parse(law.media_urls).length > 0 && <ImageIcon size={16} title="Diagrams Included" style={{ color: '#1a365d' }} />}
+                                        </div>
                                     </td>
                                     <td style={{ padding: '1.25rem', textAlign: 'right' }}>
                                         <div style={{ display: 'inline-flex', gap: '0.5rem' }}>

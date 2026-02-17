@@ -41,6 +41,11 @@ export const createLaw = async (lawData) => {
     return response.data;
 };
 
+export const bulkCreateLaws = async (lawsArray) => {
+    const response = await api.post('/laws/bulk', { laws: lawsArray });
+    return response.data;
+};
+
 export const updateLaw = async (id, lawData) => {
     const response = await api.put(`/laws/${id}`, lawData);
     return response.data;

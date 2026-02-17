@@ -35,8 +35,8 @@ exports.searchLaws = async (req, res) => {
 
         const searchTerm = `%${q}%`;
         const [rows] = await db.query(
-            'SELECT * FROM laws WHERE title LIKE ? OR description LIKE ? OR content LIKE ?',
-            [searchTerm, searchTerm, searchTerm]
+            'SELECT * FROM laws WHERE title LIKE ? OR description LIKE ? OR content LIKE ? OR explanation LIKE ?',
+            [searchTerm, searchTerm, searchTerm, searchTerm]
         );
         res.json(rows);
     } catch (error) {
@@ -46,13 +46,12 @@ exports.searchLaws = async (req, res) => {
 
 exports.createLaw = async (req, res) => {
     try {
-        const { title, description, content, category_id } = req.body;
-        // Basic validation
+        const { title, description, content, category_id, explanation, media_urls, pdf_url } = req.body;
         if (!title || !content) return res.status(400).json({ error: 'Title and content are required' });
 
         const [result] = await db.query(
-            'INSERT INTO laws (title, description, content, category_id) VALUES (?, ?, ?, ?)',
-            [title, description, content, category_id]
+            'INSERT INTO laws (title, description, content, category_id, explanation, media_urls, pdf_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [title, description, content, category_id, explanation, JSON.stringify(media_urls || []), pdf_url]
         );
         res.status(201).json({ id: result.insertId, title, description, category_id });
     } catch (error) {
@@ -60,12 +59,33 @@ exports.createLaw = async (req, res) => {
     }
 };
 
+exports.bulkCreateLaws = async (req, res) => {
+    try {
+        const { laws } = req.body; // Array of law objects
+        if (!Array.isArray(laws)) return res.status(400).json({ error: 'Expected an array of laws' });
+
+        const results = [];
+        for (const law of laws) {
+            const { title, description, content, category_id, explanation, media_urls, pdf_url } = law;
+            const [result] = await db.query(
+                'INSERT INTO laws (title, description, content, category_id, explanation, media_urls, pdf_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [title, description, content, category_id, explanation, JSON.stringify(media_urls || []), pdf_url]
+            );
+            results.push({ id: result.insertId, title });
+        }
+
+        res.status(201).json({ message: `${results.length} laws uploaded successfully`, results });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.updateLaw = async (req, res) => {
     try {
-        const { title, description, content, category_id } = req.body;
+        const { title, description, content, category_id, explanation, media_urls, pdf_url } = req.body;
         await db.query(
-            'UPDATE laws SET title = ?, description = ?, content = ?, category_id = ? WHERE id = ?',
-            [title, description, content, category_id, req.params.id]
+            'UPDATE laws SET title = ?, description = ?, content = ?, category_id = ?, explanation = ?, media_urls = ?, pdf_url = ? WHERE id = ?',
+            [title, description, content, category_id, explanation, JSON.stringify(media_urls || []), pdf_url, req.params.id]
         );
         res.json({ message: "Law updated successfully" });
     } catch (error) {
