@@ -78,6 +78,24 @@ const AdminDashboard = () => {
         }
     };
 
+    const downloadTemplate = () => {
+        const template = [{
+            title: "Article 14: Equality",
+            category_id: 1,
+            description: "Equality before law.",
+            explanation: "Everyone is the same in the eyes of the law.",
+            content: "The State shall not deny to any person equality...",
+            media_urls: [],
+            pdf_url: ""
+        }];
+        const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "law_template.json";
+        a.click();
+    };
+
     const handleBulkUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -86,7 +104,7 @@ const AdminDashboard = () => {
         reader.onload = async (event) => {
             try {
                 const csvOrJson = event.target.result;
-                const lawsArray = JSON.parse(csvOrJson);
+                const lawsArray = JSON.parse(csvOrJson.trim());
                 if (Array.isArray(lawsArray)) {
                     await bulkCreateLaws(lawsArray);
                     alert(`${lawsArray.length} laws uploaded successfully!`);
@@ -95,7 +113,8 @@ const AdminDashboard = () => {
                     alert("Invalid JSON format. Expected an array of laws.");
                 }
             } catch (err) {
-                alert("Error parsing file inside Admin Dashboard. Please ensure it is valid JSON.");
+                console.error("JSON Parse Error:", err);
+                alert("Error parsing file. Please use the Download Template button to get a valid file.");
             }
         };
         reader.readAsText(file);
@@ -123,6 +142,10 @@ const AdminDashboard = () => {
                     <p style={{ color: 'var(--secondary)' }}>Manage your legal digital repository (Rich Content Enabled)</p>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button className="btn btn-outline" onClick={downloadTemplate} style={{ gap: '0.5rem' }}>
+                        <Download size={18} />
+                        Get Template
+                    </button>
                     <input
                         type="file"
                         ref={fileInputRef}
