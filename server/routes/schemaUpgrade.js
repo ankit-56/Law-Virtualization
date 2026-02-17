@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 
-router.post('/upgrade-schema', async (req, res) => {
+router.post('/', async (req, res) => {
     const { setupKey } = req.body;
     if (setupKey !== process.env.JWT_SECRET) {
         return res.status(403).json({ error: 'Unauthorized' });
