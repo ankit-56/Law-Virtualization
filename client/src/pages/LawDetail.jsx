@@ -121,48 +121,43 @@ const LawDetail = () => {
                         </div>
                     </div>
 
-                    <div style={{ color: 'var(--secondary)', marginBottom: '1.5rem', fontStyle: 'italic', fontSize: '1.2rem', borderLeft: '4px solid var(--primary)', paddingLeft: '1rem' }}>
+                    <div style={{ color: 'var(--secondary)', marginBottom: '3rem', fontStyle: 'italic', fontSize: '1.4rem', borderLeft: '6px solid var(--primary)', paddingLeft: '2rem', lineHeight: '1.5' }}>
                         {law.description}
                     </div>
 
                     {/* Rich Content: Explanation & Diagrams */}
                     {(law.explanation || mediaUrls.length > 0) && (
-                        <div style={{ backgroundColor: '#fcf8f0', borderRadius: 'var(--radius)', padding: '1.5rem', marginBottom: '2rem', border: '1px solid #c5a05950' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#c5a059', marginBottom: '1rem', fontWeight: 'bold' }}>
-                                <Info size={20} />
-                                EASY EXPLANATION & VISUALS
+                        <div className="explanation-box animate-fade-in">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#c5a059', marginBottom: '2rem', fontWeight: '900', fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                <Info size={24} />
+                                Educational Breakdown & Visuals
                             </div>
 
                             {mediaUrls.length > 0 && (
-                                <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', marginBottom: '1.5rem', paddingBottom: '0.5rem' }}>
+                                <div style={{ display: 'flex', gap: '2rem', overflowX: 'auto', marginBottom: '3rem', paddingBottom: '1rem', scrollbarWidth: 'thin' }}>
                                     {mediaUrls.map((url, i) => (
-                                        <div key={i} style={{ flex: '0 0 auto', width: '300px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', backgroundColor: 'white' }}>
-                                            <img src={url} alt={`Diagram ${i + 1}`} style={{ width: '100%', height: '180px', objectFit: 'contain' }} />
-                                            <div style={{ padding: '0.5rem', fontSize: '0.75rem', textAlign: 'center', color: 'var(--secondary)' }}>
-                                                Diagram/Visual {i + 1}
+                                        <div key={i} style={{ flex: '0 0 auto', width: '380px', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid var(--border)', backgroundColor: 'white', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' }}>
+                                            <img src={url} alt={`Diagram ${i + 1}`} style={{ width: '100%', height: '220px', objectFit: 'cover' }} />
+                                            <div style={{ padding: '1rem', fontSize: '0.85rem', textAlign: 'center', color: 'var(--secondary)', fontWeight: '600' }}>
+                                                Statutory Visual {i + 1}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
 
-                            <div style={{ lineHeight: '1.6', color: '#1a365d', fontSize: '1.05rem' }}>
+                            <div style={{ lineHeight: '1.8', color: '#1e293b', fontSize: '1.2rem', whiteSpace: 'pre-wrap' }}>
                                 {law.explanation}
                             </div>
                         </div>
                     )}
 
-                    <div id="law-content" className="law-content" style={{
-                        lineHeight: '2',
-                        whiteSpace: 'pre-wrap',
-                        padding: '1.5rem',
-                        backgroundColor: '#f8fafc',
-                        borderRadius: 'var(--radius)',
-                        border: '1px solid var(--border)',
-                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
-                        fontFamily: 'serif',
-                        fontSize: '1.1rem'
-                    }}>
+                    <div style={{ marginTop: '5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: '900', fontSize: '1.4rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <div style={{ width: '50px', height: '4px', background: 'var(--primary)' }}></div>
+                        OFFICIAL STATUTORY RECORD
+                    </div>
+
+                    <div id="law-content" className="law-content law-content-paper" style={{ whiteSpace: 'pre-wrap' }}>
                         {law.content}
                     </div>
                 </article>

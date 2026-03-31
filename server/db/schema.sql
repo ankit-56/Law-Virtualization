@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS laws (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     content LONGTEXT,
+    explanation TEXT,
+    media_urls TEXT,
+    pdf_url VARCHAR(500),
     category_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL

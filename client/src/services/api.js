@@ -26,6 +26,11 @@ export const getLaws = async (categoryId) => {
     return response.data;
 };
 
+export const getCategories = async () => {
+    const response = await api.get('/categories');
+    return response.data;
+};
+
 export const searchLaws = async (query) => {
     const response = await api.get('/laws/search', { params: { q: query } });
     return response.data;

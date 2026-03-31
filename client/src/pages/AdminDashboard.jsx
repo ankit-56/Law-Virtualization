@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getLaws, createLaw, deleteLaw, updateLaw, bulkCreateLaws } from '../services/api';
-import { Trash2, Plus, Edit2, X, Save, FileText, Layers, Users, Upload, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { getLaws, createLaw, deleteLaw, updateLaw, bulkCreateLaws, getCategories } from '../services/api';
+import { Trash2, Plus, Edit2, X, Save, FileText, Layers, Users, Upload, Image as ImageIcon, Link as LinkIcon, Download } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [laws, setLaws] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -22,7 +23,17 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         loadLaws();
+        loadCategories();
     }, []);
+
+    const loadCategories = async () => {
+        try {
+            const data = await getCategories();
+            setCategories(data);
+        } catch (error) {
+            console.error("Failed to load categories", error);
+        }
+    };
 
     const loadLaws = async () => {
         setLoading(true);
@@ -170,7 +181,7 @@ const AdminDashboard = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
                 {[
                     { label: 'Total Laws', value: laws.length, icon: <FileText size={20} />, color: '#1a365d' },
-                    { label: 'Categories', value: 5, icon: <Layers size={20} />, color: '#c5a059' },
+                    { label: 'Categories', value: categories.length, icon: <Layers size={20} />, color: '#c5a059' },
                     { label: 'Active Users', value: '12', icon: <Users size={20} />, color: '#1a365d' },
                 ].map((stat, i) => (
                     <div key={i} className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -213,11 +224,9 @@ const AdminDashboard = () => {
                                     onChange={e => setFormData({ ...formData, category_id: e.target.value })}
                                     style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--foreground)' }}
                                 >
-                                    <option value={1}>Constitutional Law</option>
-                                    <option value={2}>Criminal Law</option>
-                                    <option value={3}>Civil Law</option>
-                                    <option value={4}>Corporate Law</option>
-                                    <option value={5}>Family Law</option>
+                                    {categories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
